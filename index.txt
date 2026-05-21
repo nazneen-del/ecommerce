@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dummy Shopping Store</title>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      background: #f5f5f5;
+      color: #333;
+    }
+
+    header {
+      background: #111827;
+      color: white;
+      padding: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    header h1 {
+      font-size: 24px;
+    }
+
+    .cart-btn {
+      background: #2563eb;
+      border: none;
+      color: white;
+      padding: 10px 18px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 30px auto;
+      padding: 0 20px;
+    }
+
+    .products {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      transition: 0.3s;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+    }
+
+    .card img {
+      width: 100%;
+      height: 220px;
+      object-fit: cover;
+    }
+
+    .card-content {
+      padding: 15px;
+    }
+
+    .card h3 {
+      margin-bottom: 10px;
+    }
+
+    .price {
+      color: #2563eb;
+      font-weight: bold;
+      margin-bottom: 12px;
+      font-size: 18px;
+    }
+
+    .add-btn {
+      width: 100%;
+      padding: 10px;
+      border: none;
+      background: #10b981;
+      color: white;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 15px;
+    }
+
+    .add-btn:hover {
+      background: #059669;
+    }
+
+    .cart-panel {
+      position: fixed;
+      right: -400px;
+      top: 0;
+      width: 350px;
+      height: 100vh;
+      background: white;
+      box-shadow: -4px 0 10px rgba(0,0,0,0.2);
+      transition: 0.3s;
+      padding: 20px;
+      overflow-y: auto;
+      z-index: 999;
+    }
+
+    .cart-panel.active {
+      right: 0;
+    }
+
+    .cart-item {
+      display: flex;
+      justify-content: space-between;
+      margin: 15px 0;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .checkout-btn {
+      width: 100%;
+      padding: 12px;
+      background: #2563eb;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      margin-top: 20px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    .checkout-btn:hover {
+      background: #1d4ed8;
+    }
+
+    .close-btn {
+      background: red;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-bottom: 20px;
+    }
+
+    .order-success {
+      background: #dcfce7;
+      color: #166534;
+      padding: 15px;
+      border-radius: 8px;
+      margin-top: 20px;
+      display: none;
+    }
+
+    footer {
+      text-align: center;
+      padding: 20px;
+      margin-top: 50px;
+      background: #111827;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Dummy Shopping Store</h1>
+    <button class="cart-btn" onclick="toggleCart()">
+      Cart (<span id="cart-count">0</span>)
+    </button>
+  </header>
+
+  <div class="container">
+    <div class="products" id="product-list"></div>
+  </div>
+
+  <div class="cart-panel" id="cartPanel">
+    <button class="close-btn" onclick="toggleCart()">Close</button>
+
+    <h2>Your Cart</h2>
+
+    <div id="cart-items"></div>
+
+    <h3 style="margin-top:20px;">
+      Total: ₹<span id="cart-total">0</span>
+    </h3>
+
+    <button class="checkout-btn" onclick="checkout()">
+      Checkout
+    </button>
+
+    <div class="order-success" id="orderSuccess"></div>
+  </div>
+
+  <footer>
+    Dummy Ecommerce Website for Pixel Testing
+  </footer>
+
+  <script>
+    const products = [
+      {
+        id: 1,
+        name: 'Wireless Headphones',
+        price: 1999,
+        image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500'
+      },
+      {
+        id: 2,
+        name: 'Smart Watch',
+        price: 2499,
+        image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500'
+      },
+      {
+        id: 3,
+        name: 'Gaming Mouse',
+        price: 899,
+        image: 'https://images.unsplash.com/photo-1527814050087-3793815479db?w=500'
+      },
+      {
+        id: 4,
+        name: 'Bluetooth Speaker',
+        price: 1499,
+        image: 'https://images.unsplash.com/photo-1589003077984-894e133dabab?w=500'
+      },
+      {
+        id: 5,
+        name: 'Laptop Backpack',
+        price: 1299,
+        image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=500'
+      },
+      {
+        id: 6,
+        name: 'Running Shoes',
+        price: 2999,
+        image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=500'
+      },
+      {
+        id: 7,
+        name: 'Phone Case',
+        price: 499,
+        image: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=500'
+      },
+      {
+        id: 8,
+        name: 'Power Bank',
+        price: 1599,
+        image: 'https://images.unsplash.com/photo-1583394838336-acd977736f90?w=500'
+      }
+    ];
+
+    let cart = [];
+
+    function renderProducts() {
+      const productList = document.getElementById('product-list');
+
+      productList.innerHTML = products.map(product => `
+        <div class="card">
+          <img src="${product.image}" alt="${product.name}">
+
+          <div class="card-content">
+            <h3>${product.name}</h3>
+            <p class="price">₹${product.price}</p>
+
+            <button class="add-btn" onclick="addToCart(${product.id})">
+              Add to Cart
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function addToCart(id) {
+      const product = products.find(p => p.id === id);
+      cart.push(product);
+
+      updateCart();
+
+      console.log('Product Added:', product.name);
+
+      // Example Pixel Event
+      // fbq('track', 'AddToCart');
+    }
+
+    function updateCart() {
+      const cartItems = document.getElementById('cart-items');
+      const cartCount = document.getElementById('cart-count');
+      const cartTotal = document.getElementById('cart-total');
+
+      cartCount.innerText = cart.length;
+
+      cartItems.innerHTML = '';
+
+      let total = 0;
+
+      cart.forEach(item => {
+        total += item.price;
+
+        cartItems.innerHTML += `
+          <div class="cart-item">
+            <span>${item.name}</span>
+            <span>₹${item.price}</span>
+          </div>
+        `;
+      });
+
+      cartTotal.innerText = total;
+    }
+
+    function toggleCart() {
+      document.getElementById('cartPanel').classList.toggle('active');
+    }
+
+    function checkout() {
+      if(cart.length === 0) {
+        alert('Your cart is empty!');
+        return;
+      }
+
+      const orderId = 'ORD' + Math.floor(Math.random() * 1000000);
+
+      document.getElementById('orderSuccess').style.display = 'block';
+
+      document.getElementById('orderSuccess').innerHTML = `
+        <strong>Order Placed Successfully!</strong><br><br>
+        Order ID: <strong>${orderId}</strong>
+      `;
+
+      console.log('Purchase Completed:', orderId);
+
+      // Example Purchase Pixel Event
+      // fbq('track', 'Purchase', {
+      //   value: 100,
+      //   currency: 'INR'
+      // });
+
+      cart = [];
+      updateCart();
+    }
+
+    renderProducts();
+  </script>
+
+</body>
+</html>
